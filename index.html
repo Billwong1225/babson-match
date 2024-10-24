@@ -78,6 +78,7 @@
 </head>
 <body>
 
+  <!-- Form for user input -->
   <div class="container" id="match-container">
     <h1>Babson Friendship & Dating Match</h1>
     <form id="match-form">
@@ -104,31 +105,77 @@
     <div id="loading-message" class="hidden">Finding a match...</div>
   </div>
 
+  <!-- Chat Interface (appears after matching) -->
+  <div class="container" id="chat-container" style="display:none;">
+    <h2>Anonymous Chat</h2>
+    <div id="message-box" style="height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></div>
+    <div id="message-input" style="margin-top: 10px;">
+      <input type="text" id="chat-input" placeholder="Type your message..." style="width: 100%; padding: 10px;" />
+      <input type="submit" id="send-message" value="Send" style="margin-top: 10px; width: 100%;" />
+    </div>
+    <button id="leave-chat" style="margin-top: 20px;">Leave Chat</button>
+  </div>
+
   <div class="footer">
     <p>All matches and chats are anonymous. Enjoy and make new connections!</p>
   </div>
 
-  <!-- Socket.io and JavaScript logic here -->
+  <!-- Socket.io for real-time communication -->
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io();
+    const socket = io(); // Initialize socket connection
 
+    // When user submits the form
     document.getElementById('match-form').addEventListener('submit', function(event) {
       event.preventDefault();
+      
+      // Get form values
       const nickname = document.getElementById('nickname').value;
       const gender = document.getElementById('gender').value;
       const matchType = document.getElementById('match-type').value;
 
+      // Send user details to the server
       socket.emit('findMatch', { nickname, gender, matchType });
+
+      // Show loading message
       document.getElementById('loading-message').classList.remove('hidden');
     });
 
+    // When a match is found, switch to the chat interface
     socket.on('matchFound', function(data) {
       document.getElementById('match-container').style.display = 'none';
       document.getElementById('loading-message').classList.add('hidden');
-      document.getElementById('chat-container').style.display = 'flex';
+      document.getElementById('chat-container').style.display = 'block';
+
+      console.log('Matched with:', data);
+    });
+
+    // Handle sending chat messages
+    document.getElementById('send-message').addEventListener('click', function() {
+      const message = document.getElementById('chat-input').value;
+      if (message) {
+        socket.emit('sendMessage', message);
+        document.getElementById('chat-input').value = '';
+      }
+    });
+
+    // Display received messages in the chat box
+    socket.on('receiveMessage', function(message) {
+      const messageBox = document.getElementById('message-box');
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = message;
+      messageBox.appendChild(messageDiv);
+      messageBox.scrollTop = messageBox.scrollHeight;
+    });
+
+    // Handle leaving the chat
+    document.getElementById('leave-chat').addEventListener('click', function() {
+      socket.emit('leaveChat');
+      alert("You have left the chat.");
+      window.location.reload(); // Reload the page to reset everything
     });
   </script>
 
 </body>
 </html>
+
