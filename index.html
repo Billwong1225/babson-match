@@ -27,9 +27,6 @@
       text-align: center;
       color: #333;
     }
-    .hidden {
-      display: none;
-    }
     #chat-container {
       display: none;
       flex-direction: column;
@@ -123,56 +120,55 @@
     <p>All matches and chats are anonymous. Enjoy and make new connections!</p>
   </div>
 
+  <script src="/socket.io/socket.io.js"></script> <!-- Ensure this points to your server -->
   <script>
-    const usersWaiting = []; // Simulating a queue of users waiting to match
+    const socket = io(); // Connect to the server
 
-    // Function to simulate waiting for another user
-    function findMatch() {
-      document.getElementById('loading-message').classList.remove('hidden');
-
-      // Simulate checking for a real match
-      setTimeout(() => {
-        // If there's no user in the queue, stay in "finding a match" mode
-        if (usersWaiting.length === 0) {
-          document.getElementById('loading-message').innerText = "Still finding a match...";
-        } else {
-          // If another user is found, proceed to chat
-          startChat();
-        }
-      }, 3000); // Simulated 3 second delay for finding a match
-    }
-
-    function startChat() {
-      // Hide match form and loading message
-      document.getElementById('match-container').classList.add('hidden');
-      document.getElementById('loading-message').classList.add('hidden');
-
-      // Show chat interface
-      document.getElementById('chat-container').classList.remove('hidden');
-    }
-
+    // Handle form submission
     document.getElementById('match-form').addEventListener('submit', function(event) {
       event.preventDefault();
-      findMatch(); // Start looking for a match
+      const nickname = document.getElementById('nickname').value;
+      const gender = document.getElementById('gender').value;
+      const matchType = document.getElementById('match-type').value;
+
+      // Send a request to the server to find a match
+      socket.emit('findMatch', { nickname, gender, matchType });
+
+      // Display loading message
+      document.getElementById('loading-message').classList.remove('hidden');
     });
 
-    // Handle chat functionality (just a simulation for now)
+    // Receive match notification from server
+    socket.on('matchFound', function(matchData) {
+      document.getElementById('match-container').classList.add('hidden');
+      document.getElementById('loading-message').classList.add('hidden');
+      document.getElementById('chat-container').classList.remove('hidden');
+      console.log('Matched with:', matchData);
+    });
+
+    // Handle sending chat messages
     document.getElementById('send-message').addEventListener('click', function() {
-      const input = document.getElementById('chat-input').value;
-      if (input) {
-        const messageBox = document.getElementById('message-box');
-        const message = document.createElement('div');
-        message.textContent = `You: ${input}`;
-        messageBox.appendChild(message);
+      const message = document.getElementById('chat-input').value;
+      if (message) {
+        socket.emit('sendMessage', message);
         document.getElementById('chat-input').value = '';
-        messageBox.scrollTop = messageBox.scrollHeight;
       }
     });
 
-    // Simulate leaving the chat
+    // Receive chat messages
+    socket.on('receiveMessage', function(message) {
+      const messageBox = document.getElementById('message-box');
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = message;
+      messageBox.appendChild(messageDiv);
+      messageBox.scrollTop = messageBox.scrollHeight;
+    });
+
+    // Handle leaving the chat
     document.getElementById('leave-chat').addEventListener('click', function() {
+      socket.emit('leaveChat');
       alert("You have left the chat.");
-      window.location.reload(); // Refresh the page to reset everything
+      window.location.reload();
     });
   </script>
 
