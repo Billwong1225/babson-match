@@ -27,6 +27,9 @@
       text-align: center;
       color: #333;
     }
+    .hidden {
+      display: none;
+    }
     #chat-container {
       display: none;
       flex-direction: column;
@@ -71,6 +74,11 @@
       text-align: center;
       color: #666;
     }
+    #loading-message {
+      text-align: center;
+      margin-top: 1rem;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -97,10 +105,12 @@
 
       <input type="submit" value="Find a Match">
     </form>
+
+    <div id="loading-message" class="hidden">Finding a match...</div>
   </div>
 
   <!-- Chat Interface -->
-  <div class="container" id="chat-container">
+  <div class="container hidden" id="chat-container">
     <div id="message-box"></div>
     <div id="message-input">
       <input type="text" id="chat-input" placeholder="Type your message..." />
@@ -114,11 +124,36 @@
   </div>
 
   <script>
+    let usersWaiting = []; // Simulating a queue of users waiting to match
+
+    // Function to simulate waiting for another user
+    function findMatch() {
+      document.getElementById('loading-message').classList.remove('hidden');
+
+      // Simulate checking for a real match
+      setTimeout(() => {
+        // If there's no user in the queue, stay in "finding a match" mode
+        if (usersWaiting.length === 0) {
+          document.getElementById('loading-message').innerText = "Still finding a match...";
+        } else {
+          // If another user is found, proceed to chat
+          startChat();
+        }
+      }, 3000); // Simulated 3 second delay for finding a match
+    }
+
+    function startChat() {
+      // Hide match form and loading message
+      document.getElementById('match-container').classList.add('hidden');
+      document.getElementById('loading-message').classList.add('hidden');
+
+      // Show chat interface
+      document.getElementById('chat-container').classList.remove('hidden');
+    }
+
     document.getElementById('match-form').addEventListener('submit', function(event) {
       event.preventDefault();
-      // Simulate match found
-      document.getElementById('match-container').style.display = 'none';
-      document.getElementById('chat-container').style.display = 'flex';
+      findMatch(); // Start looking for a match
     });
 
     // Handle chat functionality (just a simulation for now)
@@ -132,4 +167,15 @@
         document.getElementById('chat-input').value = '';
         messageBox.scrollTop = messageBox.scrollHeight;
       }
-   
+    });
+
+    // Simulate leaving the chat
+    document.getElementById('leave-chat').addEventListener('click', function() {
+      alert("You have left the chat.");
+      window.location.reload(); // Refresh the page to reset everything
+    });
+  </script>
+
+</body>
+</html>
+
