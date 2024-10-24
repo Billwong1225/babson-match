@@ -71,11 +71,6 @@
       text-align: center;
       color: #666;
     }
-    #loading-message {
-      text-align: center;
-      margin-top: 1rem;
-      font-style: italic;
-    }
   </style>
 </head>
 <body>
@@ -102,12 +97,11 @@
 
       <input type="submit" value="Find a Match">
     </form>
-
-    <div id="loading-message" class="hidden">Finding a match...</div>
+    <div id="loading-message">Finding a match...</div>
   </div>
 
   <!-- Chat Interface -->
-  <div class="container hidden" id="chat-container">
+  <div class="container" id="chat-container">
     <div id="message-box"></div>
     <div id="message-input">
       <input type="text" id="chat-input" placeholder="Type your message..." />
@@ -120,30 +114,31 @@
     <p>All matches and chats are anonymous. Enjoy and make new connections!</p>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script> <!-- Ensure this points to your server -->
+  <!-- Import Socket.io -->
+  <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io(); // Connect to the server
+    const socket = io(); // Initialize Socket.io connection to the server
 
-    // Handle form submission
+    // Handle the form submission to find a match
     document.getElementById('match-form').addEventListener('submit', function(event) {
       event.preventDefault();
       const nickname = document.getElementById('nickname').value;
       const gender = document.getElementById('gender').value;
       const matchType = document.getElementById('match-type').value;
 
-      // Send a request to the server to find a match
+      // Emit a 'findMatch' event to the server
       socket.emit('findMatch', { nickname, gender, matchType });
 
-      // Display loading message
-      document.getElementById('loading-message').classList.remove('hidden');
+      // Display loading message while finding a match
+      document.getElementById('loading-message').style.display = 'block';
     });
 
-    // Receive match notification from server
-    socket.on('matchFound', function(matchData) {
-      document.getElementById('match-container').classList.add('hidden');
-      document.getElementById('loading-message').classList.add('hidden');
-      document.getElementById('chat-container').classList.remove('hidden');
-      console.log('Matched with:', matchData);
+    // When a match is found, switch to the chat interface
+    socket.on('matchFound', function(data) {
+      document.getElementById('match-container').style.display = 'none';
+      document.getElementById('loading-message').style.display = 'none';
+      document.getElementById('chat-container').style.display = 'flex';
+      console.log('Matched with:', data);
     });
 
     // Handle sending chat messages
@@ -155,7 +150,7 @@
       }
     });
 
-    // Receive chat messages
+    // Display received messages in the chat
     socket.on('receiveMessage', function(message) {
       const messageBox = document.getElementById('message-box');
       const messageDiv = document.createElement('div');
@@ -168,7 +163,7 @@
     document.getElementById('leave-chat').addEventListener('click', function() {
       socket.emit('leaveChat');
       alert("You have left the chat.");
-      window.location.reload();
+      window.location.reload(); // Refresh the page to reset everything
     });
   </script>
 
