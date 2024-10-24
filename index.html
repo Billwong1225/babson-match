@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Babson Friendship Match</title>
+  <title>Babson Friendship & Dating Match</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -32,7 +32,7 @@
       flex-direction: column;
       gap: 1rem;
     }
-    input[type="text"], input[type="submit"], textarea {
+    input[type="text"], input[type="submit"], textarea, select {
       padding: 0.5rem;
       border-radius: 5px;
       border: 1px solid #ccc;
@@ -57,16 +57,27 @@
 <body>
 
   <div class="container">
-    <h1>Babson Friendship Match</h1>
-    <p>Connect with fellow Babson students anonymously and build new friendships through text chat!</p>
+    <h1>Babson Friendship & Dating Match</h1>
+    <p>Select whether you want to meet for socializing or dating.</p>
     
     <form id="match-form">
-      <label for="interests">Enter Your Interests</label>
-      <textarea id="interests" name="interests" rows="4" placeholder="Enter your interests (e.g., sports, business, hobbies, etc.)"></textarea>
-      
       <label for="nickname">Pick a Nickname</label>
-      <input type="text" id="nickname" name="nickname" placeholder="Enter a nickname for your match">
-      
+      <input type="text" id="nickname" name="nickname" placeholder="Enter your nickname" required>
+
+      <label for="gender">Select your Gender</label>
+      <select id="gender" name="gender" required>
+        <option value="">--Select--</option>
+        <option value="Man">Man</option>
+        <option value="Woman">Woman</option>
+      </select>
+
+      <label for="match-type">Choose Match Type</label>
+      <select id="match-type" name="match-type" required>
+        <option value="">--Select--</option>
+        <option value="social">Social (Any Gender)</option>
+        <option value="dating">Dating (Opposite Gender)</option>
+      </select>
+
       <input type="submit" value="Find a Match">
     </form>
 
@@ -85,12 +96,23 @@
     document.getElementById('match-form').addEventListener('submit', function(event) {
       event.preventDefault();
       
-      // Dummy match logic
       const nickname = document.getElementById('nickname').value;
-      const interests = document.getElementById('interests').value;
+      const gender = document.getElementById('gender').value;
+      const matchType = document.getElementById('match-type').value;
       
-      if (nickname && interests) {
-        document.getElementById('match-details').innerText = `You matched with another student who shares similar interests: ${interests}`;
+      if (nickname && gender && matchType) {
+        let matchedGender;
+        
+        if (matchType === 'social') {
+          // For social, match with any gender randomly
+          matchedGender = Math.random() > 0.5 ? 'Man' : 'Woman';
+        } else if (matchType === 'dating') {
+          // For dating, match with the opposite gender
+          matchedGender = (gender === 'Man') ? 'Woman' : 'Man';
+        }
+        
+        const randomMatch = 'Anonymous User ' + Math.floor(Math.random() * 1000);
+        document.getElementById('match-details').innerText = `You (${gender}) matched with ${randomMatch} (${matchedGender})!`;
         document.getElementById('match-result').style.display = 'block';
       }
     });
